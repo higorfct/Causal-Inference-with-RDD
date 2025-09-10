@@ -1,107 +1,97 @@
-# Projeto-9-Infer-ncia-Causal-com-RDD
+# Project-9-Causal-Inference-with-RDD
 
-# README - Análise RDD para Avaliar Efeito de Desconto na Taxa de Renovação
+# README - RDD Analysis to Evaluate the Effect of a Discount on Renewal Rate
 
-📌 Contexto:
-Uma empresa de vendas de peças e seguros automotivos deseja entender se conceder um desconto automático para clientes com score de engajamento igual ou superior a 80 aumenta a probabilidade de renovação do contrato/serviço.
+## Context
+An automotive parts and insurance sales company wants to understand whether offering an automatic discount to customers with an engagement score equal to or greater than 80 increases the probability of renewing the contract/service.
 
-💼 Problema de Negócio:
-A concessão de um desconto, oferecido apenas a clientes com score de engajamento acima de um certo thereshold (80), impacta positivamente a taxa de renovação?
+## Business Problem
+Does granting a discount, offered only to customers with an engagement score above a certain threshold (80), positively impact the renewal rate?
 
+## Analysis Objective
+Evaluate whether there is a jump (discontinuity) in the renewal rate at the score cutoff (80), suggesting a causal effect of the discount on renewal, using the Regression Discontinuity Design (RDD) methodology.
 
-🎯 Objetivo da análise:
-Avaliar se existe um salto (discontinuidade) na taxa de renovação no ponto de corte do score (80), sugerindo efeito causal do desconto sobre a renovação, utilizando a metodologia de Regressão Descontínua (RDD). 
-
-🧠 Justificativa metodológica:
-A empresa não randomizou quem recebeu o desconto, mas usou uma regra objetiva de elegibilidade (score ≥ 80). Isso permite aplicar a Regressão Discontínua para estimar o efeito local do tratamento, comparando indivíduos imediatamente acima e abaixo do ponto de corte, na tentativa de simular um RCT com grupos tratados e mão tratados.
-
+## Methodological Justification
+The company did not randomize who received the discount but used an objective eligibility rule (score ≥ 80). This allows applying RDD to estimate the local treatment effect by comparing individuals just above and below the cutoff, attempting to simulate a randomized controlled trial with treated and untreated groups.
 
 ---
 
-## Etapas da Análise
+## Analysis Steps
 
-### 1. Definição do cutoff e simulação dos dados
-- Foi fixado um ponto de corte no score de engajamento em 80.
-- Foram simuladas 1000 observações com um tratamento binário (recebeu desconto se score >= 80).
-- A variável resposta `renovou` é gerada probabilisticamente como uma função do tratamento e do score, simulando uma taxa base e um efeito do tratamento.
+### 1. Definition of the cutoff and data simulation
+- Cutoff point set at an engagement score of 80.  
+- 1000 observations simulated with a binary treatment (received discount if score ≥ 80).  
+- Response variable `renewed` generated probabilistically as a function of treatment and score, simulating a baseline rate and a treatment effect.
 
-### 2. Exploração visual
-- Os dados foram agrupados em bins para visualização.
-- Criamos um gráfico das médias da taxa de renovação por bin, separando os grupos tratado e não tratado.
-- Observou-se uma possível descontinuidade na taxa de renovação ao redor do cutoff 80, sugerindo um efeito do desconto.
+### 2. Visual Exploration
+- Data grouped into bins for visualization.  
+- Plot created showing average renewal rate per bin, separating treated and untreated groups.  
+- Possible discontinuity around cutoff 80 observed, suggesting a discount effect.
 
-  ![99ca1f8e-76b6-4abd-8810-f50ed4a752cd](https://github.com/user-attachments/assets/d8e17da3-dc6d-4426-8cb2-c20417dbdf90)
+![Renewal Rate by Bin](https://github.com/user-attachments/assets/d8e17da3-dc6d-4426-8cb2-c20417dbdf90)
 
+### 3. Effect Estimation via `RDestimate`
+- `rdd` package used to estimate the local treatment effect.  
+- Average increase in renewal rate between 19% to 31%, depending on the selected bandwidth.  
+- P-values above 0.10 indicate inability to reject the null hypothesis at 5% significance.
 
-### 3. Estimação do efeito via `RDestimate`
-- Utilizamos o pacote `rdd` para estimar o efeito local do tratamento.
-- Os resultados indicaram um aumento médio da taxa de renovação entre 19% a 31%, dependendo da largura da bandwidth selecionada.
-- No entanto, os valores-p para os testes estatísticos ficaram acima de 0.10, indicando que não podemos rejeitar a hipótese nula com alta confiança estatística (5%).
+### 4. Estimation with `rdrobust` (more robust method)
+- Local polynomial adjustment with heteroskedasticity correction performed.  
+- Estimated coefficient: ~18.6% increase in renewal rate.  
+- Associated p-value (0.22) confirms lack of statistical significance at 5%.
 
-### 4. Estimação com `rdrobust` (método mais robusto)
-- Foi realizada uma estimação com ajuste local polinomial e correção para heterocedasticidade.
-- O coeficiente estimado foi de aproximadamente 18.6% de aumento na taxa de renovação.
-- O p-valor associado (0.22) reforça a ausência de significância estatística ao nível convencional (5%).
+### 5. Detailed Visualization with `rdplot`
+- Visual confirmation of jump in outcome variable at cutoff.  
+- Pattern consistent with hypothesis of a positive treatment effect (considering economic significance over statistical significance).
 
-### 5. Visualização detalhada com `rdplot`
-- O gráfico confirma visualmente o salto na variável de interesse no cutoff.
-- O padrão visual é consistente com a hipótese de um efeito positivo do tratamento (considerando a significância econômica ao invés da significância estatística).
+![RDD Detailed Plot](https://github.com/user-attachments/assets/db0d8eac-b665-4669-b838-e9774c129499)
 
-  ![54d3e92a-2706-4ed2-95ea-6eee46b4caef](https://github.com/user-attachments/assets/db0d8eac-b665-4669-b838-e9774c129499)
+### 6. Manipulation Test (McCrary)
+- Density test around cutoff shows no score manipulation.  
+- Supports validity of RDD design.
 
+### 7. Placebo Test
+- Fictitious cutoff at 85 tested; no effect expected.  
+- No significant discontinuity observed, supporting original design validity.
 
-  
+### 8. Robustness with Different Bandwidths
+- Adjustments with smaller bandwidths performed.  
+- Estimated effects remained positive, without strong statistical significance.
 
-### 6. Teste de manipulação (McCrary)
-- O teste de densidade em torno do cutoff não indicou manipulação do score.
-- Isso reforça a validade do desenho de RDD, pois não há evidência de que os indivíduos tenham manipulado seu score para receber o tratamento.
-
-### 7. Teste placebo
-- Foi feito um teste com cutoff fictício em 85, onde não deveria haver efeito.
-- Constatou-se que não há descontinuidade significativa no ponto placebo, reforçando a validade do desenho original.
-
-### 8. Robustez com diferentes bandwidths
-- Ajustes foram feitos com larguras de banda menores.
-- Os efeitos estimados continuaram positivos, porém sem significância estatística forte.
-
-### 9. Balanceamento de covariáveis (ex: idade)
-- Verificamos se outras covariáveis, como idade, apresentam descontinuidade no cutoff.
-- Não houve diferença significativa na idade entre os grupos de cada lado do cutoff, indicando equilíbrio e reforçando a validade do desenho RDD.
+### 9. Covariate Balancing (e.g., age)
+- Checked other covariates for discontinuity at cutoff.  
+- No significant difference observed, indicating balance and reinforcing RDD validity.
 
 ---
 
-## Insights e Interpretação dos Resultados
+## Insights and Interpretation
 
-- **Efeito estimado:** O desconto aplicado no cutoff de 80 parece aumentar a taxa de renovação em torno de 18-30%, um efeito relevante do ponto de vista econômico.
-- **Significância estatística:** Os testes indicam que este efeito não é estatisticamente significativo ao nível de 5%, com p-valores geralmente acima de 0.10. Isso sugere que, com os dados do estudo, não há evidência forte para afirmar que o desconto tem impacto na renovação dos serviços.
-- **Significância econômica:** Apesar da falta de significância estatística, o tamanho do efeito é grande o suficiente para ser interessante em um contexto prático, e pode justificar a continuidade da política ou a coleta de mais dados para reproduzir o estudo com RDD com maior poder estatístico.
-- **Validade do desenho:** Os testes de manipulação e placebo indicam que o desenho RDD é adequado e confiável para este tipo de avaliação causal.
-
----
-
-## Conclusão
-
-A análise exemplifica a aplicação da metodologia RDD para avaliar o impacto de um tratamento em um ponto de corte. Embora os resultados não mostrem significância estatística robusta, o efeito econômico estimado é relevante e o desenho é válido. Em estudos reais, recomenda-se aumentar a amostra ou complementar com outras abordagens para garantir conclusões mais firmes.
+- **Estimated effect:** Discount at cutoff 80 increases renewal rate by ~18–30%, relevant economically.  
+- **Statistical significance:** Effect not significant at 5%, p-values generally >0.10.  
+- **Economic significance:** Despite lack of statistical significance, effect size is practically relevant and may justify policy continuation or further data collection.  
+- **Design validity:** Manipulation and placebo tests confirm RDD is appropriate and reliable.
 
 ---
 
-## Pacotes Utilizados
-
-- `rdd` e `rddtools` para análise de RDD clássica
-- `rdrobust` para estimativas robustas e inferência
-- `rddensity` para teste de manipulação
-- `ggplot2` e `dplyr` para visualização e manipulação dos dados
+## Conclusion
+RDD methodology applied to evaluate treatment impact at cutoff. Results show relevant economic effect despite lack of strong statistical significance. Design is valid; for real-world studies, larger samples or complementary approaches recommended for firmer conclusions.
 
 ---
 
-## Código de Referência
-
-[O código completo da simulação, estimação, visualizações e testes está disponível no script deste projeto.]
+## Packages Used
+- `rdd` and `rddtools` – classical RDD analysis  
+- `rdrobust` – robust estimation and inference  
+- `rddensity` – manipulation tests  
+- `ggplot2` and `dplyr` – data visualization and manipulation
 
 ---
 
-## FIM
+## Reference Code
+[Full code for simulation, estimation, visualization, and tests is available in the project script.]
 
+---
+
+## THE END
 
 ---
 
