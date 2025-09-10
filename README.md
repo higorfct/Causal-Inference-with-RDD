@@ -28,7 +28,8 @@ The company did not randomize who received the discount but used an objective el
 - Plot created showing average renewal rate per bin, separating treated and untreated groups.  
 - Possible discontinuity around cutoff 80 observed, suggesting a discount effect.
 
-![Renewal Rate by Bin](https://github.com/user-attachments/assets/d8e17da3-dc6d-4426-8cb2-c20417dbdf90)
+<img width="862" height="420" alt="image" src="https://github.com/user-attachments/assets/f3bb1e8b-8243-4940-a4c0-07bbcd6b7225" />
+
 
 ### 3. Effect Estimation via `RDestimate`
 - `rdd` package used to estimate the local treatment effect.  
@@ -44,7 +45,8 @@ The company did not randomize who received the discount but used an objective el
 - Visual confirmation of jump in outcome variable at cutoff.  
 - Pattern consistent with hypothesis of a positive treatment effect (considering economic significance over statistical significance).
 
-![RDD Detailed Plot](https://github.com/user-attachments/assets/db0d8eac-b665-4669-b838-e9774c129499)
+<img width="862" height="420" alt="image" src="https://github.com/user-attachments/assets/59ec36fc-e315-4b63-bc03-a6952337aede" />
+
 
 ### 6. Manipulation Test (McCrary)
 - Density test around cutoff shows no score manipulation.  
