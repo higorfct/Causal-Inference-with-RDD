@@ -1,7 +1,7 @@
-# Instale os pacotes (se ainda não tiver)
+# Install the packages (if not already installed)
 install.packages(c("rdd", "rdrobust", "rddensity", "ggplot2"))
 
-# Carregue os pacotes
+# Load the packages
 library(rdd)
 library(rddtools)
 library(rdrobust)
@@ -10,7 +10,7 @@ library(ggplot2)
 library(dplyr)
 
 # ----------------------------------------------------
-# ETAPA 1 - DEFINIÇÃO DO CUTOFF E SIMULAÇÃO DOS DADOS
+# STEP 1 - DEFINE CUTOFF AND SIMULATE DATA
 # ----------------------------------------------------
 
 set.seed(123)
@@ -19,104 +19,104 @@ n <- 1000
 cutoff <- 80
 
 score <- runif(n, 50, 100)
-tratamento <- ifelse(score >= cutoff, 1, 0)
+treatment <- ifelse(score >= cutoff, 1, 0)
 
-prob_renovacao <- 0.2 + 0.25 * tratamento + 0.01 * (score - cutoff)
-renovou <- rbinom(n, 1, plogis(prob_renovacao))
+renewal_prob <- 0.2 + 0.25 * treatment + 0.01 * (score - cutoff)
+renewed <- rbinom(n, 1, plogis(renewal_prob))
 
-dados <- data.frame(score, tratamento, renovou)
+data <- data.frame(score, treatment, renewed)
 
 # -----------------------------
-# ETAPA 2 - EXPLORAÇÃO VISUAL
+# STEP 2 - VISUAL EXPLORATION
 # -----------------------------
 
-# Número de bins
+# Number of bins
 n_bins <- 20
 
-# Criar bins manuais
-dados_binned <- dados %>%
+# Create manual bins
+data_binned <- data %>%
   mutate(bin = cut(score, breaks = n_bins)) %>%
   group_by(bin) %>%
   summarise(score_mean = mean(score),
-            renovou_mean = mean(renovou),
-            tratamento = mean(tratamento))
+            renewed_mean = mean(renewed),
+            treatment = mean(treatment))
 
-
-# Gráfico com pontos médios e regressões separadas
-ggplot(dados_binned, aes(x = score_mean, y = renovou_mean)) +
-  geom_point(aes(color = as.factor(tratamento)), size = 2) +
+# Plot with midpoints and separate regressions
+ggplot(data_binned, aes(x = score_mean, y = renewed_mean)) +
+  geom_point(aes(color = as.factor(treatment)), size = 2) +
   geom_smooth(method = "lm", se = FALSE,
-              aes(color = as.factor(tratamento), group = as.factor(tratamento))) +
+              aes(color = as.factor(treatment), group = as.factor(treatment))) +
   geom_vline(xintercept = cutoff, linetype = "dashed") +
-  labs(title = "RDD com Médias por Bins",
-       x = "Score de Engajamento (média por bin)",
-       y = "Taxa de Renovação (média por bin)",
-       color = "Tratamento")
+  labs(title = "RDD with Bin Means",
+       x = "Engagement Score (bin average)",
+       y = "Renewal Rate (bin average)",
+       color = "Treatment")
 
-# Garantir bins mais estreitos ou alinhados com o cutoff
-cut(score, breaks = seq(50, 100, by = 2))  # exemplo: de 2 em 2
+# Ensure narrower bins or aligned with the cutoff
+cut(score, breaks = seq(50, 100, by = 2))  # example: bins of width 2
 
-
-# -----------------------------
-# ETAPA 3 - ESTIMAR COM RDestimate
-# -----------------------------
-modelo_rd <- RDestimate(renovou ~ score, data = dados, cutpoint = cutoff)
-summary(modelo_rd)
 
 # -----------------------------
-# ETAPA 4 - ESTIMAR COM rdrobust (mais robusto)
+# STEP 3 - ESTIMATE WITH RDestimate
 # -----------------------------
-modelo_robusto <- rdrobust(y = dados$renovou, x = dados$score, c = cutoff)
-summary(modelo_robusto)
+rd_model <- RDestimate(renewed ~ score, data = data, cutpoint = cutoff)
+summary(rd_model)
 
 # -----------------------------
-# ETAPA 5 - VISUALIZAÇÃO COM rdplot
+# STEP 4 - ESTIMATE WITH rdrobust (more robust)
 # -----------------------------
-rdplot(y = dados$renovou, x = dados$score, c = cutoff,
-       x.label = "Score de Engajamento", y.label = "Taxa de Renovação",
-       title = "RDD: Efeito do Desconto na Renovação")
+robust_model <- rdrobust(y = data$renewed, x = data$score, c = cutoff)
+summary(robust_model)
 
 # -----------------------------
-# ETAPA 6 - TESTE DE MANIPULAÇÃO (McCrary)
+# STEP 5 - VISUALIZATION WITH rdplot
 # -----------------------------
-densidade <- rddensity(dados$score, c = cutoff)
-summary(densidade)
+rdplot(y = data$renewed, x = data$score, c = cutoff,
+       x.label = "Engagement Score", y.label = "Renewal Rate",
+       title = "RDD: Effect of Discount on Renewal")
 
 # -----------------------------
-# ETAPA 7 - PLACEBO TEST
+# STEP 6 - MANIPULATION TEST (McCrary)
 # -----------------------------
-placebo <- RDestimate(renovou ~ score, data = dados, cutpoint = 85)
+density <- rddensity(data$score, c = cutoff)
+summary(density)
+
+# -----------------------------
+# STEP 7 - PLACEBO TEST
+# -----------------------------
+placebo <- RDestimate(renewed ~ score, data = data, cutpoint = 85)
 summary(placebo)
 
 # -----------------------------
-# ETAPA 8 - ROBUSTEZ: BANDWIDTHS DIFERENTES
-# ----------------------------
+# STEP 8 - ROBUSTNESS: DIFFERENT BANDWIDTHS
+# -----------------------------
+result <- rdrobust(y = data$renewed, x = data$score, c = cutoff, h = 3)
 
-resultado <- rdrobust(y = dados$renovou, x = dados$score, c = cutoff, h = 3)
+# Treatment effect estimate
+coef <- result$Estimate[1]
 
-# Estimativa do efeito
-coef <- resultado$Estimate[1]
+# Standard error
+se <- result$Std.error[1]
 
-# Erro padrão
-se <- resultado$Std.error[1]
-
-# Valor-p
-pvalor <- resultado$pv[1]
+# p-value
+pvalue <- result$pv[1]
 
 coef
 se
-pvalor
+pvalue
 
 # -----------------------------
-# ETAPA 9 - BALANCEAMENTO DE COVARIÁVEL (IDADE)
+# STEP 9 - COVARIATE BALANCE (AGE)
 # -----------------------------
-dados$idade <- round(runif(n, 18, 60))
+data$age <- round(runif(n, 18, 60))
 
-# Criar objeto RDD para variável idade
-dados_rdd_idade <- rdd_data(y = dados$idade, x = dados$score, cutpoint = cutoff)
+# Create RDD object for age variable
+data_rdd_age <- rdd_data(y = data$age, x = data$score, cutpoint = cutoff)
 
-# Estimar modelo RDD linear para idade
-modelo_idade <- rdd_reg_lm(rdd_object = dados_rdd_idade)
+# Estimate linear RDD model for age
+age_model <- rdd_reg_lm(rdd_object = data_rdd_age)
 
-# Mostrar resumo do modelo
-summary(modelo_idade)
+# Show model summary
+summary(age_model)
+
+
