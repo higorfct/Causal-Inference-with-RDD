@@ -1,6 +1,5 @@
-# Project-9-Causal-Inference-with-RDD
 
-# README - RDD Analysis to Evaluate the Effect of a Discount on Renewal Rate
+#  RDD Analysis to Evaluate the Effect of a Discount on Renewal Rate
 
 ## Context
 An automotive parts and insurance sales company wants to understand whether offering an automatic discount to customers with an engagement score equal to or greater than 80 increases the probability of renewing the contract/service.
