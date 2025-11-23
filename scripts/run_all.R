@@ -1,0 +1,7 @@
+source("scripts/01_load_packages.R")
+source("scripts/02_reading_csv.R")
+source("scripts/03_eda_rdd.R")
+source("scripts/04_rdd_estimation.R")
+source("scripts/05_manipulation_placebo.R")
+source("scripts/06_robustness_check.R")
+source("scripts/07_covariate_balance.R")
