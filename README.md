@@ -67,6 +67,22 @@ The company did not randomize who received the discount but used an objective el
 
 ## Insights and Interpretation
 
+# RDD Results Summary
+
+# RDD Results Summary
+
+| Model                | Bandwidth   | Observations | Estimate   | Std. Error | z-value  | p-value |
+|----------------------|------------|-------------|-----------|------------|---------|---------|
+| RDD: RDestimate      | LATE       | 125         | 0.3066    | 0.1880     | 1.631   | 0.1029  |
+| RDD: RDestimate      | Half-BW    | 63          | 0.3052    | 0.2713     | 1.125   | 0.2606  |
+| RDD: RDestimate      | Double-BW  | 256         | 0.1932    | 0.1302     | 1.484   | 0.1377  |
+| RDD: rdrobust        | Main BW    | 1000        | 0.186     | NA         | 1.238   | 0.216   |
+| RDD: Placebo         | LATE       | 134         | -0.04654  | 0.1915     | -0.2431 | 0.8080  |
+| RDD: Placebo         | Half-BW    | 66          | -0.15044  | 0.2599     | -0.5789 | 0.5626  |
+| RDD: Placebo         | Double-BW  | 262         | -0.13017  | 0.1349     | -0.9651 | 0.3345  |
+| RDD: rdrobust h = 3  | h = 3      | 1000        | 0.3327    | NA         | NA      | 0.1178  |
+
+
 - **Estimated effect:** Discount at cutoff 80 increases renewal rate by ~18–30%, relevant economically.  
 - **Statistical significance:** Effect not significant at 5%, p-values generally >0.10.  
 - **Economic significance:** Despite lack of statistical significance, effect size is practically relevant and may justify policy continuation or further data collection.  
